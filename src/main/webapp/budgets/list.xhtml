@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <ui:composition template="/loginTemplate.xhtml">
+        <ui:define name="title">#{msgs['budgetList']}#{msgs['sysName']}</ui:define>
+        <ui:define name="header">
+            <div class="page-header">
+                <h3><h:outputText id ="pageTitle" value="#{budgetListBean.fiscalYear}年度 #{msgs['budgetList']}"/></h3>
+            </div>
+        </ui:define>
+        <ui:define name="content">
+            <ui:fragment rendered="#{budgetListBean.listMessage != null}">
+                <div class="alert alert-info budget-message" role="alert"> 
+                    <h:outputText id="listMessage" value="#{budgetListBean.listMessage}" escape="false"/>
+                </div>
+            </ui:fragment>
+            <f:metadata>
+                <f:viewAction action="#{budgetListBean.checkAccessAuth()}" />
+            </f:metadata>
+            <h:form prependId="false">
+                <ui:fragment rendered="#{budgetListBean.pulldownDepartmentList.size() > 1}" >
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h:selectOneMenu id="department" label="#{msgs['belong']}" value="#{budgetListBean.referenceDepartmentId}" class="form-control">
+                                <f:selectItems value="#{budgetListBean.pulldownDepartmentList}" var="department" itemValue="#{department.id}" itemLabel="#{department.name}"/>  
+                                <f:ajax event="change" onevent="timeoutAjax" render="budgetTable" listener="#{budgetListBean.changePulldown()}"/>
+                            </h:selectOneMenu>
+                        </div>
+                    </div>
+                </ui:fragment>
+                <div jsf:id="budgetTable">
+                    <ui:fragment rendered="#{budgetListBean.existBudgetList()}">
+                        <div class="text-right">
+                            <h:outputText id="description" class="text-muted" value=" #{msgs['notTaxMessage']}"/>
+                        </div>
+                        <ui:repeat id="groupListModel" value="#{budgetListBean.groupListModel}" var="groupListModel">
+                            <ui:fragment rendered="#{groupListModel.budgetListModel.size()!=0}" >
+                                <div class="panel panel-primary">
+                                    <div class="panel panel-heading">
+                                        <h:outputText id="groupName" value="#{groupListModel.name}"/>
+                                    </div>
+                                    <table class="table table-bordered table-condensed table-hover budgetListTable">
+                                        <thead>
+                                            <tr class="active">
+                                                <th id="policyCodeHead" class="text-center policyCode">#{msgs['policyCode']}</th>
+                                                <th id="policyNameHead" class="text-center policyName">#{msgs['policyName']}</th>
+                                                <th id="initialBudgetHead" class="text-center initialBudget">①#{msgs['initialBudget']}</th>
+                                                <th id="estimatedSettlementHead" class="text-center estimatedSettlement">②#{msgs['estimatedSettlement']}</th>
+                                                <th id="achivementHead" class="text-center achivement">③#{msgs['achievement']}</th>
+                                                <th id="differenceHead" class="text-center difference">#{msgs['difference']}（②－③）</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat id="budgetListModel" value="#{groupListModel.budgetListModel}" var="budgetListModel">
+                                                <tr>
+                                                    <td>
+                                                        <h:link id="policyCode" outcome="/budgets/detail.xhtml" value="#{budgetListModel.policyCode}" class="link">
+                                                            <f:param value="#{budgetListModel.id}" name="id"/>
+                                                            <f:param value="#{budgetListBean.referenceDepartmentId}" name="referenceDepartmentId"/>
+                                                        </h:link>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText id="policyName" value="#{fn:substring(budgetListModel.policyName, 0, 20)}"/>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <h:outputText id="initialBudget" value="#{budgetListModel.initialBudget}">
+                                                            <f:convertNumber type="number"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <h:outputText id="estimatedSettlement" value="#{budgetListModel.estimatedSettlement}">
+                                                            <f:convertNumber type="number"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <h:outputText id="achivement" value="#{budgetListModel.achivement}">
+                                                            <f:convertNumber type="number"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <h:outputText id="difference" value="#{budgetListModel.difference}">
+                                                            <f:convertNumber type="number"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                            <ui:fragment rendered="#{groupListModel.budgetListModel.size() > 1}">
+                                                <tr class="subTotal">
+                                                    <td class="text-center" colspan="2">
+                                                        <h:outputFormat id="groupSubTotal" value="#{msgs['groupSubTotalCount']}" >
+                                                            <f:param value="#{groupListModel.budgetListModel.size()}" />
+                                                        </h:outputFormat>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <h:outputText id="subTotalInitialBudget" value="#{groupListModel.subTotalInitialBudget}">
+                                                            <f:convertNumber type="number"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <h:outputText id="subTotalEstimatedSettlement" value="#{groupListModel.subTotalEstimatedSettlement}">
+                                                            <f:convertNumber type="number"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <h:outputText id="subTotalAchivement" value="#{groupListModel.subTotalAchivement}">
+                                                            <f:convertNumber type="number"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <h:outputText id="subTotalDifference" value="#{groupListModel.subTotalDifference}">
+                                                            <f:convertNumber type="number"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </ui:fragment>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </ui:fragment>
+                        </ui:repeat>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{!budgetListBean.existBudgetList()}">
+                        <div class="h2 text-center col-sm-12" id="noList">
+                            #{budgetListBean.fiscalYear}年度の予算申請がありません。
+                        </div>
+                    </ui:fragment>
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>
+

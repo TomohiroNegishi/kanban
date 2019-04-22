@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="Ysn" transaction-type="JTA">
+    <jta-data-source>jdbc/ysnds</jta-data-source>
+    <class>jp.msads.edu.ysn.entities.DepartmentEntity</class>
+    <class>jp.msads.edu.ysn.entities.ExpenseEntity</class>
+    <class>jp.msads.edu.ysn.entities.PolicyEntity</class>
+    <class>jp.msads.edu.ysn.entities.YearPolicyEntity</class>
+    <class>jp.msads.edu.ysn.entities.AchievementEntity</class>
+    <class>jp.msads.edu.ysn.entities.PasswordEntity</class>
+    <class>jp.msads.edu.ysn.entities.AccountEntity</class>
+    <class>jp.msads.edu.ysn.entities.EmployeeEntity</class>
+    <class>jp.msads.edu.ysn.entities.AccountRoleEntity</class>
+    <class>jp.msads.edu.ysn.entities.MessageEntity</class>
+    <class>jp.msads.edu.ysn.entities.PolicyMemoEntity</class>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <shared-cache-mode>NONE</shared-cache-mode>
+  </persistence-unit>
+</persistence>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Ysn">
+    <taskdef name="wldeploy" classname="weblogic.ant.taskdefs.management.WLDeploy"  />
+    <!-- 開発サーバーデプロイ用 -->
+    <target name="deploy">
+        <wldeploy 
+            action="deploy" verbose="true" debug="true"
+            name="YsnAntDeploy" source="target/Ysn-1.0-SNAPSHOT.war"
+            user="weblogic" password="weblogic1"
+            adminurl="t3://teduap02:7001" targets="mgs1" />
+    </target>
+    <target name="undeploy">
+        <wldeploy 
+            action="undeploy" verbose="true" debug="true"
+            name="YsnAntDeploy" 
+            user="weblogic" password="weblogic1"
+            adminurl="t3://teduap02:7001" targets="mgs1" 
+            failonerror="false" />
+    </target>
+    
+</project>

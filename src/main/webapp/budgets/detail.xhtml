@@ -1,0 +1,553 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    <ui:composition template="/loginTemplate.xhtml">
+        <ui:define name="title">#{msgs['budgetDetail']}#{msgs['sysName']}</ui:define>
+        <ui:define name="header">
+            <div class="page-header">
+                <h3><h:outputText id ="pageTitle" value="#{budgetDetailBean.fiscalYear}年度 #{msgs['budgetDetail']}"/></h3>
+            </div>
+        </ui:define>
+        <ui:define name="content">
+            <ui:fragment rendered="#{budgetDetailBean.detailMessage != null}">
+                <div class="alert alert-info budget-message" role="alert">
+                    <h:outputText id="detailMessage" value="#{budgetDetailBean.detailMessage}" escape="false"/>
+                </div>
+            </ui:fragment>
+            <f:metadata>
+                <f:viewAction action="#{budgetDetailBean.checkAccessAuth()}" />
+            </f:metadata>
+            <!--関係者新規追加モーダル-->
+            <div class="modal fade" id="editModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <h:form id="frm" prependId="false">
+                            <div class="modal-header">
+                                <a id="closeBtn" class="close" data-dismiss="modal">
+                                    <span aria-hidden="true" class="h4">&times;閉じる</span>
+                                </a>
+                                <h4 id="modalTitle" class="modal-title">担当者・内線編集</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <h:outputLabel for="editStaffName" value="#{msgs['staffName']}"/>
+                                    <span id="require" class="label label-required require">#{msgs['require']}</span>
+                                    <h:inputText id="editStaffName" value="#{budgetDetailBean.staffName}" class="form-control" label="氏名" maxlength="20">
+                                        <f:validator validatorId="requireValidator"/>
+                                    </h:inputText>
+                                    <div class="help-block">
+                                        <h:outputFormat id="nameLengthLimit" value="#{msgs['textLengthLimit']}" >
+                                            <f:param value="20" />
+                                        </h:outputFormat>
+                                    </div>
+                                    <h:message id="errStaffName" for="editStaffName" class="message text-danger"/>
+                                </div>
+                                <div class="form-group">
+                                    <h:outputLabel for="editPhoneNumber" value="内線" />
+                                    <h:inputText id="editPhoneNumber" value="#{budgetDetailBean.phoneNumber}" class="form-control" label="内線" maxlength="30"/>
+                                    <div class="help-block">
+                                        <h:outputFormat id="phoneNnmberLengthLimit" value="#{msgs['textLengthLimit']}" >
+                                            <f:param value="30" />
+                                        </h:outputFormat>
+                                    </div>
+                                </div>
+                                <h:commandButton id="update" class="btn btn-primary btn-block" action="#{budgetDetailBean.editStaffData()}" value="#{msgs['update']}">
+                                    <f:ajax execute="frm" onevent="timeoutAjax" listener="#{budgetDetailBean.thinkAction()}" render="errStaffName"/>
+                                </h:commandButton>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+            <!--メモ新規追加モーダル-->
+            <div class="modal fade" id="insertPolicyMemoModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <h:form id="frmPolicyMemo" prependId="false">
+                            <div class="modal-header">
+                                <a id="policyMemoModalCloseBtn" class="close" data-dismiss="modal">
+                                    <span aria-hidden="true" class="h4">&times;閉じる</span>
+                                </a>
+                                <h4 id="policyMemoModalTitle" class="modal-title">#{msgs['policyMemo']}#{msgs['insert']}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <h:outputLabel for="insertPolicyMemo" value="メモ"/>
+                                    <h:inputTextarea id="insertPolicyMemo" value="#{budgetDetailBean.policyMemo}" class="form-control" label="#{msgs['policyMemo']}" rows="10" style="resize: none;" pt:maxlength="200">
+                                    </h:inputTextarea>
+                                    <div class="help-block">
+                                        <h:outputFormat id="policyMemoLengthLimit" value="#{msgs['textLengthLimit']}" >
+                                            <f:param value="200" />
+                                        </h:outputFormat>
+                                    </div>
+                                </div>
+                                <h:commandButton id="insertPolicyMemoBtn" class="btn btn-primary btn-block" action="#{budgetDetailBean.insertPolicyMemoData()}" value="#{msgs['insert']}"/>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+            <h:form prependId="false">
+                <div>
+                    <h:commandLink id="backList" class="btn btn-primary budgetDetailButton" action="#{budgetDetailBean.backListPage()}" value="#{msgs['backBudgetListPage']}"/>
+                    <a href="#" id="editLink" class="link pull-right" data-toggle="modal" data-target="#editModal">担当者・内線編集</a>
+                </div>
+                <table class="table table-condensed detailTable">
+                    <tr>
+                        <th class="col-sm-2 text-center active" id="policyCodeHead" style="vertical-align: middle;">
+                            <label for="policyCode" class="budgetListInformation">
+                                #{msgs['policyCode']}
+                            </label>
+                        </th>
+                        <td class="col-sm-2">
+                            <h:outputText id="policyCode" value="#{budgetDetailBean.budgetListModel.policyCode}"/>
+                        </td>
+                        <th class="col-sm-2 text-center active" id="policyNameHead" style="vertical-align: middle;">
+                            <label for="policyName" class="budgetListInformation ">
+                                #{msgs['policyName']}
+                            </label>
+                        </th>
+                        <td class="col-sm-2" colspan="3">
+                            <h:outputText id="policyName" value="#{budgetDetailBean.budgetListModel.policyName}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="col-sm-2 text-center active" id="departmentNameHead" style="vertical-align: middle;">
+                            <label for="departmentName" class="budgetListInformation">
+                                #{msgs['departmentName']}
+                            </label>
+                        </th>
+                        <td class="col-sm-2">
+                            <h:outputText id="departmentName" value="#{budgetDetailBean.budgetListModel.departmentName}"/>
+                        </td>
+                        <th class="col-sm-2 text-center active" id="staffNameHead" style="vertical-align: middle;">
+                            <label for="staffName" class="budgetListInformation">
+                                #{msgs['staffName']}
+                            </label>
+                        </th>
+                        <td class="col-sm-2">
+                            <h:outputText id="staffName" value="#{budgetDetailBean.budgetListModel.staffName}"/>
+                        </td>
+                        <th class="col-sm-2 text-center active" id="phoneNumberHead" style="vertical-align: middle;">
+                            <label for="phoneNumber" class="budgetListInformation">
+                                #{msgs['phoneNumber']}
+                            </label>
+                        </th>
+                        <td class="col-sm-2">
+                            <h:outputText id="phoneNumber" value="#{budgetDetailBean.budgetListModel.phoneNumber}"/>
+                        </td>
+                    </tr>
+                </table>
+                <div class="text-right">
+                    <h:outputText id="description" class="text-muted" value=" #{msgs['notTaxMessage']}"/>
+                </div>
+                <table class="table table-bordered table-condensed">
+                    <thead>
+                        <tr class="active">
+                            <th id="initialBudgetHead" class="text-center detail">①#{msgs['initialBudget']}</th>
+                            <th id="decisionBudgetHead" class="text-center detail">②#{msgs['decisionBudget']}</th>
+                            <th id="estimatedSettlementHead" class="text-center detail">③#{msgs['estimatedSettlement']}</th>
+                            <th id="achivementHead" class="text-center detail">④#{msgs['achievement']}</th>
+                            <th id="differenceHead" class="text-center detail">#{msgs['difference']}（③－④）</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-right">
+                                <h:outputText id="initialBudget" value="#{budgetDetailBean.budgetListModel.initialBudget}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="decisionBudget" value="#{budgetDetailBean.budgetListModel.decisionBudget}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="estimatedSettlement" value="#{budgetDetailBean.budgetListModel.estimatedSettlement}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="achivement" value="#{budgetDetailBean.budgetListModel.achivement}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="difference" value="#{budgetDetailBean.budgetListModel.difference}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-bordered table-condensed table-hover" style="border-collapse: separate">
+                    <thead>
+                        <tr class="active">
+                            <th class="monthDetailTopic" colspan="2"/>
+                            <th id="aprHead" class="text-center monthDetail">4月</th>
+                            <th id="martHead" class="text-center monthDetail">5月</th>
+                            <th id="junHead" class="text-center monthDetail">6月</th>
+                            <th id="julHead" class="text-center monthDetail">7月</th>
+                            <th id="augHead" class="text-center monthDetail">8月</th>
+                            <th id="sepHead" class="text-center monthDetail">9月</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th colspan="2">
+                                <h:outputText id="firstBudget" value="#{msgs['budget']}"/>
+                            </th>
+                            <td class="text-right">
+                                <h:outputText id="aprBudget" value="#{budgetDetailBean.budgetListModel.apr}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="mayBudget" value="#{budgetDetailBean.budgetListModel.may}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="junBudget" value="#{budgetDetailBean.budgetListModel.jun}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="julBudget" value="#{budgetDetailBean.budgetListModel.jul}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="augBudget" value="#{budgetDetailBean.budgetListModel.aug}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="sepBudget" value="#{budgetDetailBean.budgetListModel.sep}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr id="firstAchievementModel" jsfc = "ui:repeat" value="#{budgetDetailBean.achievementModel}" var="achievementModel" varStatus="stat">
+                            <ui:fragment rendered="#{stat.index == 0}">
+                                <th rowspan="#{budgetDetailBean.achievementModel.size()}" class="vertical-middle">
+                                    <h:outputText id="firstAchivement" value="#{msgs['achievement']}"/>
+                                </th>
+                            </ui:fragment>
+                            <td>
+                                <h:outputText id="firstExpenseName" value="#{achievementModel.expenseName}"/>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="aprAchievement" value="#{achievementModel.apr}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="mayAchievement" value="#{achievementModel.may}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="junAchievement" value="#{achievementModel.jun}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="julAchievement" value="#{achievementModel.jul}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="augAchievement" value="#{achievementModel.aug}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="sepAchievement" value="#{achievementModel.sep}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <ui:fragment rendered="#{budgetDetailBean.achievementModel.size() > 1}">
+                            <tr>
+                                <th colspan="2">
+                                    <h:outputText id="firstSubTotal" value="#{msgs['achievementSubTotal']}"/>
+                                </th>
+                                <td class="text-right">
+                                    <h:outputText id="aprSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.apr}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="maySubTotal" value="#{budgetDetailBean.achievementSubTotalModel.may}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="junSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.jun}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="julSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.jul}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="augSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.aug}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="sepSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.sep}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </ui:fragment>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <th colspan="2">
+                                <h:outputText id="firstRestBudget" value="#{msgs['restBudget']}"/>
+                            </th>
+                            <td class="text-right">
+                                <h:outputText id="aprRestBudget" value="#{budgetDetailBean.remainingBudgetModel.apr}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="mayRestBudget" value="#{budgetDetailBean.remainingBudgetModel.may}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="junRestBudget" value="#{budgetDetailBean.remainingBudgetModel.jun}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="julRestBudget" value="#{budgetDetailBean.remainingBudgetModel.jul}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="augRestBudget" value="#{budgetDetailBean.remainingBudgetModel.aug}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="sepRestBudget" value="#{budgetDetailBean.remainingBudgetModel.sep}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-bordered table-condensed table-hover" style="border-collapse: separate">
+                    <thead>
+                        <tr class="active">
+                            <th class="monthDetailTopic" colspan="2"/>
+                            <th id="octHead" class="text-center monthDetail">10月</th>
+                            <th id="novtHead" class="text-center monthDetail">11月</th>
+                            <th id="decHead" class="text-center monthDetail">12月</th>
+                            <th id="janHead" class="text-center monthDetail">1月</th>
+                            <th id="febHead" class="text-center monthDetail">2月</th>
+                            <th id="marHead" class="text-center monthDetail">3月</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th colspan="2">
+                                <h:outputText id="secondBudget" value="#{msgs['budget']}"/>
+                            </th>
+                            <td class="text-right">
+                                <h:outputText id="octBudget" value="#{budgetDetailBean.budgetListModel.oct}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="novBudget" value="#{budgetDetailBean.budgetListModel.nov}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="decBudget" value="#{budgetDetailBean.budgetListModel.dec}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="janBudget" value="#{budgetDetailBean.budgetListModel.jan}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="febBudget" value="#{budgetDetailBean.budgetListModel.feb}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="marBudget" value="#{budgetDetailBean.budgetListModel.mar}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr id="secondAchievementModel" jsfc = "ui:repeat" value="#{budgetDetailBean.achievementModel}" var="achievementModel" varStatus="stat">
+                            <ui:fragment rendered="#{stat.index == 0}">
+                                <th rowspan="#{budgetDetailBean.achievementModel.size()}" class="vertical-middle">
+                                    <h:outputText id="secondAchivement" value="#{msgs['achievement']}"/>
+                                </th>
+                            </ui:fragment>
+                            <td>
+                                <h:outputText id="secondExpenseName" value="#{achievementModel.expenseName}"/>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="octAchievement" value="#{achievementModel.oct}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="novAchievement" value="#{achievementModel.nov}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="decAchievement" value="#{achievementModel.dec}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="janAchievement" value="#{achievementModel.jan}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="febAchievement" value="#{achievementModel.feb}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="marAchievement" value="#{achievementModel.mar}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <ui:fragment rendered="#{budgetDetailBean.achievementModel.size() > 1}">
+                            <tr>
+                                <th colspan="2">
+                                    <h:outputText id="secondSubTotal" value="#{msgs['achievementSubTotal']}"/>
+                                </th>
+                                <td class="text-right">
+                                    <h:outputText id="octSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.oct}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="novSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.nov}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="decSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.dec}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="janSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.jan}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="febSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.feb}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputText id="marSubTotal" value="#{budgetDetailBean.achievementSubTotalModel.mar}">
+                                        <f:convertNumber type="number"/>
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </ui:fragment>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <th colspan="2">
+                                <h:outputText id="secondRestBudget" value="#{msgs['restBudget']}"/>
+                            </th>
+                            <td class="text-right">
+                                <h:outputText id="octRestBudget" value="#{budgetDetailBean.remainingBudgetModel.oct}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="novRestBudget" value="#{budgetDetailBean.remainingBudgetModel.nov}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="decRestBudget" value="#{budgetDetailBean.remainingBudgetModel.dec}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="janRestBudget" value="#{budgetDetailBean.remainingBudgetModel.jan}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="febRestBudget" value="#{budgetDetailBean.remainingBudgetModel.feb}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                            <td class="text-right">
+                                <h:outputText id="marRestBudget" value="#{budgetDetailBean.remainingBudgetModel.mar}">
+                                    <f:convertNumber type="number"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <ui:fragment rendered="#{templateBean.checkAffairs(templateBean.departmentEntity)}">
+                    <a href="#" id="policyMemoModalLink" class="link pull-right" data-toggle="modal" data-target="#insertPolicyMemoModal">#{msgs['policyMemo']}#{msgs['insert']}</a>
+                </ui:fragment>
+                <table class="table table-bordered table-condensed">
+                    <thead>
+                        <tr class="active">
+                            <th class="text-center" style="width:10%">
+                                <h:outputText id="policyMemoDateHeader" value="#{msgs['date']}"/>
+                            </th>
+                            <th class="text-center" style="width:90%">
+                                <h:outputText id="policyMemoContentHeader" value="#{msgs['content']}"/>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat id="policyMemoModel" value="#{budgetDetailBean.policyMemoModels}" var="policyMemoModel">
+                            <tr>
+                                <td>
+                                    <h:outputText id="policyMemoDate" value="#{policyMemoModel.date}">
+                                        <f:convertDateTime pattern="yyyy/MM/dd" timeZone="JST"/>
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText id="policyMemoContent" value="#{policyMemoModel.memo}"/>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody> 
+                </table>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>
+

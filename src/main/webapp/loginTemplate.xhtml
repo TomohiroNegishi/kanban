@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title><ui:insert name="title"/></title>
+        <h:outputScript library="scripts" name="jquery-1.12.4.js"/>
+        <h:outputScript library="scripts" name="jquery-ui-1.12.0.js"/>
+        <h:outputScript library="scripts" name="bootstrap.js"/>
+        <h:outputScript library="scripts" name="timeoutAjax.js"/>
+        <h:outputStylesheet library="css" name="bootstrap.css"/>
+        <h:outputStylesheet library="css" name="main.css"/>
+        <f:loadBundle basename="common" var="msgs"/>
+    </h:head>
+    <h:body>
+        <c:set var="messageUrl" value="/admins/message.xhtml"/>
+        <c:set var="policyListUrl" value="/admins/policyList.xhtml"/>
+        <c:set var="menuUrl" value="/admins/menu.xhtml"/>
+        <c:set var="editPolicyUrl" value="/admins/editPolicy.xhtml"/>
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a href="#{request.contextPath}/faces/budgets/list.xhtml" id="title" class="navbar-brand">物件費予算管理システム</a>
+                </div>
+                <div id="navbar-collapse" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <ui:fragment rendered="#{templateBean.checkAffairs(templateBean.departmentEntity)}">
+                            <li class="#{messageUrl != request.pathInfo and policyListUrl != request.pathInfo and menuUrl != request.pathInfo and editPolicyUrl != request.pathInfo ? 'active' : ''}">
+                                <a href="#{request.contextPath}/faces/budgets/list.xhtml" id="list" class="nav-adminLink">予算</a>
+                            </li>
+                            <li class="#{messageUrl == request.pathInfo or policyListUrl == request.pathInfo or menuUrl == request.pathInfo or editPolicyUrl == request.pathInfo ? 'active' : ''}">
+                                <a href="#{request.contextPath}/faces/admins/menu.xhtml" id="admins" class="nav-adminLink">管理</a>
+                            </li>
+                        </ui:fragment>
+                    </ul>
+                    <h:form prependId="false" class="navbar-right">
+                        <p class="navbar-text">
+                            <h:graphicImage class="ysn-nav-icon" library="img" name="person.png"/>
+                            <h:outputText id="belongDepartmentName" value="#{templateBean.departmentEntity.name}"/>
+                            <a href="#{request.contextPath}/faces/employees/edit.xhtml" id="userName" class="navbar-link navbarText">#{templateBean.employeeName}</a>
+                            <h:graphicImage class="ysn-nav-icon" library="img" name="logout.png"/>
+                            <!--社員編集画面でナビバーの表示が動いてしまうためコメントを挟む-->
+                            <h:commandLink id="logout" action="#{templateBean.logout()}" class="navbar-link" value="#{msgs['logout']}"/>
+                        </p>
+                    </h:form>
+                </div>
+            </div>
+        </nav>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-12 templatePadding">
+                    <ui:insert name="header"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <ui:insert name="content"/>
+                </div>
+            </div>
+        </div>
+    </h:body>
+</html>

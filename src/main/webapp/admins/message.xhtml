@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    <ui:composition template="/loginTemplate.xhtml">
+        <ui:define name="title">#{msgs['editMessage']}#{msgs['sysName']}</ui:define>
+        <ui:define name="header">
+            <script>
+                // メッセージを変更した際にモーダルを表示する
+                function ajaxSuccess(data) {
+                    if (data.status === 'complete') {
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('GET', location.href, false);
+                        xhr.send(null);
+                        if (/&lt;title&gt;タイムアウト&lt;\/title&gt;/g.test(xhr.response)) {
+                            location.href = '/Ysn/faces/login.xhtml';
+                        }
+                    }
+                    if (data.status === 'success') {
+                        $('#changeMessageModal').modal('show');
+                        // 1秒後にモーダルを閉じる
+                        setTimeout(function () {
+                            $('#changeMessageModal').modal('hide');
+                        }, 1100);
+                    }
+                }
+            </script>
+
+            <!--変更メッセージ用モーダルダイアログ-->
+            <div jsf:id="changeModal">
+                <div class="modal fade" id="changeMessageModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <h:outputText pt:id="changeMessage" value="#{messageBean.title}を#{msgs['update']}しました。" id="messageTitle"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-header">
+                <h3><h:outputText id ="pageTitle" value="#{msgs['editMessage']}"/></h3>
+            </div>
+            <h:form prependId="false" id="tab">
+                <div>
+                    <h:commandLink id="backAdminMenu" style="margin-bottom: 20px;" class="btn btn-primary" action="#{messageBean.backAdminMenuPage()}" value="#{msgs['backAdminMenuPage']}"/>
+                </div>
+                <ul class="nav nav-original-tabs" style="margin-bottom: 20px">
+                    <ui:repeat value="#{messageBean.messageEntities}" var="message" id="message">
+                        <li class="#{message.id == messageBean.id ? 'active' : ''}">
+                            <h:commandLink id="admins">
+                                <h:outputText value="#{message.title}"/>
+                                <f:ajax event="click" onevent="timeoutAjax" render="inputMessage2 tab" listener="#{messageBean.selectTab(message.id)}"/>
+                            </h:commandLink>
+                        </li>
+                    </ui:repeat>
+                </ul>
+            </h:form>
+        </ui:define>
+        <ui:define name="content">
+            <h:form prependId="false" class="form-horizontal">
+                <div class="form-group">
+                    <div jsf:id="inputMessage2" class="col-sm-9">
+                        <h:inputTextarea id="inputMessage" value="#{messageBean.text}" class="form-control" rows="10" style="resize: none;" pt:maxlength="1000"/>
+                        <div class="help-block" id="limitMessage">
+                            <h:outputFormat value="#{msgs['textLengthLimit']}" >
+                                <f:param value="1000" />
+                            </h:outputFormat>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-2">
+                        <h:commandButton id="update" value="#{msgs['update']}" class="btn btn-primary btn-block" action="#{messageBean.updateMessage()}">
+                            <f:ajax render="changeModal" onevent="ajaxSuccess" execute="inputMessage"/>
+                        </h:commandButton>
+                    </div>
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>
