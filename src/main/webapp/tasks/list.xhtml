@@ -13,49 +13,67 @@
         <h:outputScript library="scripts" name="bootstrap.js"/>
     </h:head>
     <h:body>
-        <div class="container-fluid col-lg-12">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>Task</th>
-                        <th>Member</th>
-                        <th>Progress</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>OracleDatabaseインストール</td>
-                        <td>徳川家康</td>
-                        <td>88.7%</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>OracleDatabase初期設定</td>
-                        <td>徳川家康</td>
-                        <td>2.0%</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>OracleDatabaseユーザー作成</td>
-                        <td>織田信長</td>
-                        <td>64.2%</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>OracleDatabaseパスワード期限変更</td>
-                        <td>豊臣秀吉</td>
-                        <td>29.8%</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td>NetBeansインストール</td>
-                        <td>徳川家康</td>
-                        <td>1.8%</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <h:form>
+            <div class="container-fluid col-lg-12">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Task</th>
+                            <th>Member</th>
+                            <th>Progress</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>OracleDatabaseインストール</td>
+                            <td>徳川家康</td>
+                            <td>88.7%</td>
+                            <td>
+                                <h:commandButton value="完了" class="btn btn-primary"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>OracleDatabase初期設定</td>
+                            <td>徳川家康</td>
+                            <td>2.0%</td>
+                            <td>
+                                <h:commandButton value="完了" class="btn btn-primary"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>OracleDatabaseユーザー作成</td>
+                            <td>織田信長</td>
+                            <td>64.2%</td>
+                            <td>
+                                <h:commandButton value="完了" class="btn btn-primary"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>OracleDatabaseパスワード期限変更</td>
+                            <td>豊臣秀吉</td>
+                            <td>29.8%</td>
+                            <td>
+                                <h:commandButton value="完了" class="btn btn-primary"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>NetBeansインストール</td>
+                            <td>徳川家康</td>
+                            <td>1.8%</td>
+                            <td>
+                                <h:commandButton value="完了" class="btn btn-primary"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </h:form>
     </h:body>
 </html>
